@@ -33,20 +33,21 @@ The events in the database start in the year 1950 and end in November 2011. In t
 
 Library Required:
 ```{r}
-library(plyr)
+library(ggplot2)
 ```
 
 #### 1. Read Storm Database.  Compress file are downloaded to ./data folder
 
 ```{r}
 storm_db <- read.csv(file="./data/StormData.csv.bz2", header=T)
-head(storm_db)
 ```
 
 #### 2. Load Storm Database with the require varaibles.
 
+Here are the require varabiles.
+
 LABEL | DESCRIPTION
----|---
+---|-----------------------------------------------------------------------------------
 DATE_BEGIN | Event Begin Date
 EVENT_TYPE | Event Type
 FATALITIES | Number of reported fatalities caused by the event.
@@ -57,22 +58,123 @@ PROPDMGEXP | The dollar (USD) amount of property damage caused by the event.
 CROPDMGEXP | The dollar (USD) amount of crop damage caused by the event.
 
 ```{r}
-storm <- storm_db[c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
-str(storm)
+col_set <- c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")
+storm_set <- storm_db[col_set]
+str(storm_set)
+head(storm_set)
 ```
 
 #### 3. Cleaning the Data
+Property Damage Exponent Unique Value
+```{r}
+unique(storm_set$PROPDMGEXP)
+```
 
-Does the document have a title that briefly summarizes the data analysis?
+Crop Damage Exponent Unique Value
+```{r}
+unique(storm_set$CROPDMGEXP)
+```
 
-Does the document have a synopsis that describes and summarizes the data analysis in less than 10 sentences?
-Is there a section titled "Data Processing" that describes how the data were loaded into R and processed for analysis?
-Is there a section titled "Results" where the main results are presented?
-Is there at least one figure in the document that contains a plot?
-Are there at most 3 figures in this document?
-Does the analysis start from the raw data file (i.e. the original .csv.bz2 file)?
-Does the analysis address the question of which types of events are most harmful to population health?
-Does the analysis address the question of which types of events have the greatest economic consequences?
-Do all the results of the analysis (i.e. figures, tables, numerical summaries) appear to be reproducible?
-Do the figure(s) have descriptive captions (i.e. there is a description near the figure of what is happening in the figure)?
+Property Damage Data:
+```{r}  
+storm_set$PROPDMGEXP <- as.character(storm_set$PROPDMGEXP)
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "K"] <- 1000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "M"] <- 1000000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == ""] <- 1
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "B"] <- 1000000000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "m"] <- 1000000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "0"] <- 1
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "5"] <- 100000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "6"] <- 1000000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "4"] <- 10000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "2"] <- 100
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "3"] <- 1000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "h"] <- 100
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "7"] <- 10000000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "H"] <- 100
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "1"] <- 10
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "8"] <- 100000000
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "+"] <- 0
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "-"] <- 0
+storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "?"] <- 0
+storm_set$PROPDMGEXP <- as.integer(storm_set$PROPDMGEXP)
+storm_set$PROPDMGVALUE <- storm_set$PROPDMG * storm_set$PROPDMGEXP
+```
+
+```{r}
+storm_set$CROPDMGEXP <- as.character(storm_set$CROPDMGEXP)
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "M"] <- 1000000
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "K"] <- 1000
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "m"] <- 1000000
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "B"] <- 1000000000
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "0"] <- 1
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "k"] <- 1000
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "2"] <- 100
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == ""] <- 1
+storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "?"] <- 0
+storm_set$CROPDMGEXP <- as.integer(storm_set$CROPDMGEXP)
+storm_set$CROPDMGVALUE <- storm_set$CROPDMG * storm_set$CROPDMGEXP
+```
+
+### Results
+
+#### Top 10 Death:
+```{r}
+fatality <- aggregate(FATALITIES ~ EVTYPE, storm_set, FUN = sum)
+```
+
+Here are the top 10 death.
+
+```{r}
+TOP10DEAD <- fatality[order(-fatality$FATALITIES), ][1:10,]
+TOP10DEAD
+```
+
+#### Top 10 Injuries:
+
+```{r}
+injury   <- aggregate(INJURIES ~ EVTYPE, storm_set, FUN = sum)
+```
+
+Here are the top 10 injuries.
+
+```{r}
+TOP10INJ <-injury[order(-injury$INJURIES), ][1:10,]
+TOP10INJ
+```
+
+```{r}
+TOP5DEAD <- fatality[order(-fatality$FATALITIES), ][1:5,]
+TOP5INJ <-injury[order(-injury$INJURIES), ][1:5,]
+```
+
+```{r}
+par(mfrow=c(2,2))
+barplot(TOP10DEAD$FATALITIES,names.arg=TOP10DEAD$EVTYPE,space=0.2,horiz=TRUE,col="cyan",
+        xlab="Fatalities",xlim=c(0,6000),cex.axis=0.7,ylab="Event Type",ylim=c(0,10),cex.names=0.5,
+        main="Top 10 Causes of Total Fatalities")
+barplot(TOP10INJ$INJURIES,names.arg=TOP10INJ$EVTYPE,space=0.2,horiz=TRUE,col="green",
+        xlab="Injuries",xlim=c(0,90000),cex.axis=0.7,ylab="Event Type",ylim=c(0,10),cex.names=0.5,
+        main="Top 10 Total Causes of Injuries") 
+barplot(TOP5DEAD$FATALITIES, names.arg=TOP5DEAD$EVTYPE,space=0.2,horiz=TRUE,col="red",
+        xlab="Fatalities",xlim=c(0,6000),cex.axis=0.7,ylab="Event Type",ylim=c(0,5),cex.names=0.5,
+        main="Top 5 Causes of Total Fatalities")
+barplot(TOP5INJ$INJURIES, names.arg = TOP5INJ$EVTYPE,space=0.2,horiz=TRUE,col="blue",
+        xlab="Injuries",xlim=c(0,90000),cex.axis=0.7,ylab="Event Type",ylim=c(0,5),cex.names=0.5,
+        main="Top 5 Total Causes of Injuries")
+```        
+        
+```{r}
+propertydmg <- aggregate(PROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
+cropdmg   <- aggregate(CROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
+head(propertydmg)
+head(cropdmg)
+```
+
+### Economic Consequences
+
+To analyze the top contributing weather events by total cost of damage, both property and crop damage amounts are totaled for ranking.
+
+
+
 

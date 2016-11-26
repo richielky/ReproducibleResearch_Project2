@@ -151,7 +151,7 @@ $(document).ready(function () {
 </div>
 <div id="load-storm-database-with-the-require-varaibles." class="section level4">
 <h4>2. Load Storm Database with the require varaibles.</h4>
-<p>Here are the require varabiles.</p>
+<p>Here are the require varabiles in col_set.</p>
 <table style="width:100%;">
 <colgroup>
 <col width="4%"></col>
@@ -313,14 +313,16 @@ TOP10INJ</code></pre>
 <div id="top-5-death-injuries" class="section level4">
 <h4>Top 5 Death &amp; Injuries:</h4>
 <pre class="r"><code>TOP5DEAD &lt;- fatality[order(-fatality$FATALITIES), ][1:5,]
-TOP5INJ &lt;-injury[order(-injury$INJURIES), ][1:5,]
-TOP5DEAD</code></pre>
+TOP5INJ &lt;-injury[order(-injury$INJURIES), ][1:5,]</code></pre>
+<p>Top 5 Death:</p>
+<pre class="r"><code>TOP5DEAD</code></pre>
 <pre><code>##             EVTYPE FATALITIES
 ## 834        TORNADO       5633
 ## 130 EXCESSIVE HEAT       1903
 ## 153    FLASH FLOOD        978
 ## 275           HEAT        937
 ## 464      LIGHTNING        816</code></pre>
+<p>Top 5 Injuries:</p>
 <pre class="r"><code>TOP5INJ</code></pre>
 <pre><code>##             EVTYPE INJURIES
 ## 834        TORNADO    91346
@@ -332,7 +334,7 @@ TOP5DEAD</code></pre>
 </div>
 <div id="economic-consequences" class="section level3">
 <h3>4. Economic Consequences</h3>
-<p>To analyze the top contributing weather events by total cost of damage, both property and crop damage amounts are totaled for ranking.</p>
+<p>To analyze the top contributing weather events by total cost of damage, we use both property and crop damage.</p>
 <pre class="r"><code>PROP_DMG &lt;- aggregate(PROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
 CROP_DMG   &lt;- aggregate(CROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
 head(PROP_DMG)</code></pre>

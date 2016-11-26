@@ -220,15 +220,17 @@ str(storm_set)</code></pre>
 </div>
 <div id="cleaning-the-data" class="section level4">
 <h4>3. Cleaning the Data</h4>
-<p>Property Damage Exponent Unique Value</p>
+<p>Property Damage Exponent Unique Value.</p>
 <pre class="r"><code>unique(storm_set$PROPDMGEXP)</code></pre>
 <pre><code>##  [1] K M   B m + 0 5 6 ? 4 2 3 h 7 H - 1 8
 ## Levels:  - ? + 0 1 2 3 4 5 6 7 8 B h H K m M</code></pre>
-<p>Crop Damage Exponent Unique Value</p>
+<p>Crop Damage Exponent Unique Value.</p>
 <pre class="r"><code>unique(storm_set$CROPDMGEXP)</code></pre>
 <pre><code>## [1]   M K m B ? 0 k 2
 ## Levels:  ? 0 2 B k K m M</code></pre>
-<p>Property Damage Data:</p>
+<div id="property-damage-data" class="section level5">
+<h5>Property Damage Data:</h5>
+<p>Assign the values for the property damage exponent.</p>
 <pre class="r"><code>storm_set$PROPDMGEXP &lt;- as.character(storm_set$PROPDMGEXP)
 storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == &quot;K&quot;] &lt;- 1000
 storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == &quot;M&quot;] &lt;- 1000000
@@ -251,6 +253,10 @@ storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == &quot;-&quot;] &lt;- 0
 storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == &quot;?&quot;] &lt;- 0
 storm_set$PROPDMGEXP &lt;- as.integer(storm_set$PROPDMGEXP)
 storm_set$PROPDMGVALUE &lt;- storm_set$PROPDMG * storm_set$PROPDMGEXP</code></pre>
+</div>
+<div id="crop-damage-data" class="section level5">
+<h5>Crop Damage Data:</h5>
+<p>Assign the values for the property damage exponent.</p>
 <pre class="r"><code>storm_set$CROPDMGEXP &lt;- as.character(storm_set$CROPDMGEXP)
 storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == &quot;M&quot;] &lt;- 1000000
 storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == &quot;K&quot;] &lt;- 1000
@@ -265,13 +271,14 @@ storm_set$CROPDMGEXP &lt;- as.integer(storm_set$CROPDMGEXP)
 storm_set$CROPDMGVALUE &lt;- storm_set$CROPDMG * storm_set$CROPDMGEXP</code></pre>
 </div>
 </div>
-<div id="results" class="section level3">
-<h3>Results</h3>
+<div id="results" class="section level4">
+<h4>4. Results</h4>
+</div>
 <div id="top-10-death" class="section level4">
 <h4>Top 10 Death:</h4>
-<pre class="r"><code>fatality &lt;- aggregate(FATALITIES ~ EVTYPE, storm_set, FUN = sum)</code></pre>
 <p>Here are the top 10 death.</p>
-<pre class="r"><code>TOP10DEAD &lt;- fatality[order(-fatality$FATALITIES), ][1:10,]
+<pre class="r"><code>fatality &lt;- aggregate(FATALITIES ~ EVTYPE, storm_set, FUN = sum)
+TOP10DEAD &lt;- fatality[order(-fatality$FATALITIES), ][1:10,]
 TOP10DEAD</code></pre>
 <pre><code>##             EVTYPE FATALITIES
 ## 834        TORNADO       5633
@@ -287,9 +294,9 @@ TOP10DEAD</code></pre>
 </div>
 <div id="top-10-injuries" class="section level4">
 <h4>Top 10 Injuries:</h4>
-<pre class="r"><code>injury   &lt;- aggregate(INJURIES ~ EVTYPE, storm_set, FUN = sum)</code></pre>
 <p>Here are the top 10 injuries.</p>
-<pre class="r"><code>TOP10INJ &lt;-injury[order(-injury$INJURIES), ][1:10,]
+<pre class="r"><code>injury   &lt;- aggregate(INJURIES ~ EVTYPE, storm_set, FUN = sum)
+TOP10INJ &lt;-injury[order(-injury$INJURIES), ][1:10,]
 TOP10INJ</code></pre>
 <pre><code>##                EVTYPE INJURIES
 ## 834           TORNADO    91346
@@ -306,10 +313,29 @@ TOP10INJ</code></pre>
 <div id="top-5-death-injuries" class="section level4">
 <h4>Top 5 Death &amp; Injuries:</h4>
 <pre class="r"><code>TOP5DEAD &lt;- fatality[order(-fatality$FATALITIES), ][1:5,]
-TOP5INJ &lt;-injury[order(-injury$INJURIES), ][1:5,]</code></pre>
-<pre class="r"><code>propertydmg &lt;- aggregate(PROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
-cropdmg   &lt;- aggregate(CROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
-head(propertydmg)</code></pre>
+TOP5INJ &lt;-injury[order(-injury$INJURIES), ][1:5,]
+TOP5DEAD</code></pre>
+<pre><code>##             EVTYPE FATALITIES
+## 834        TORNADO       5633
+## 130 EXCESSIVE HEAT       1903
+## 153    FLASH FLOOD        978
+## 275           HEAT        937
+## 464      LIGHTNING        816</code></pre>
+<pre class="r"><code>TOP5INJ</code></pre>
+<pre><code>##             EVTYPE INJURIES
+## 834        TORNADO    91346
+## 856      TSTM WIND     6957
+## 170          FLOOD     6789
+## 130 EXCESSIVE HEAT     6525
+## 464      LIGHTNING     5230</code></pre>
+</div>
+</div>
+<div id="economic-consequences" class="section level3">
+<h3>4. Economic Consequences</h3>
+<p>To analyze the top contributing weather events by total cost of damage, both property and crop damage amounts are totaled for ranking.</p>
+<pre class="r"><code>PROP_DMG &lt;- aggregate(PROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
+CROP_DMG   &lt;- aggregate(CROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
+head(PROP_DMG)</code></pre>
 <pre><code>##                  EVTYPE PROPDMGVALUE
 ## 1    HIGH SURF ADVISORY       200000
 ## 2         COASTAL FLOOD            0
@@ -317,7 +343,7 @@ head(propertydmg)</code></pre>
 ## 4             LIGHTNING            0
 ## 5             TSTM WIND      8100000
 ## 6       TSTM WIND (G45)         8000</code></pre>
-<pre class="r"><code>head(cropdmg)</code></pre>
+<pre class="r"><code>head(CROP_DMG)</code></pre>
 <pre><code>##                  EVTYPE CROPDMGVALUE
 ## 1    HIGH SURF ADVISORY            0
 ## 2         COASTAL FLOOD            0
@@ -325,13 +351,8 @@ head(propertydmg)</code></pre>
 ## 4             LIGHTNING            0
 ## 5             TSTM WIND            0
 ## 6       TSTM WIND (G45)            0</code></pre>
-<pre class="r"><code>TOP10PROPDMG &lt;- propertydmg[order(-propertydmg$PROPDMGVALUE), ][1:10,]
-TOP10CROPDMG &lt;- cropdmg[order(-cropdmg$CROPDMGVALUE), ][1:10,]</code></pre>
-</div>
-</div>
-<div id="economic-consequences" class="section level3">
-<h3>Economic Consequences</h3>
-<p>To analyze the top contributing weather events by total cost of damage, both property and crop damage amounts are totaled for ranking.</p>
+<pre class="r"><code>TOP10PROPDMG &lt;- PROP_DMG[order(-PROP_DMG$PROPDMGVALUE), ][1:10,]
+TOP10CROPDMG &lt;- CROP_DMG[order(-CROP_DMG$CROPDMGVALUE), ][1:10,]</code></pre>
 <div id="bar-chart-showing-10-5-top-events" class="section level4">
 <h4>Bar Chart Showing 10 &amp; 5 Top Events</h4>
 <p>Tornados are the biggest causes of Fatalities and Injuries. Flooding is the major cause of damages to property and drought is the highest cause of damages to crops.</p>

@@ -44,7 +44,7 @@ storm_db <- read.csv(file="./data/StormData.csv.bz2", header=T)
 
 #### 2. Load Storm Database with the require varaibles.
 
-Here are the require varabiles.
+Here are the require varabiles in col_set.
 
 LABEL | DESCRIPTION
 ---|-----------------------------------------------------------------------------------
@@ -65,17 +65,20 @@ head(storm_set)
 ```
 
 #### 3. Cleaning the Data
-Property Damage Exponent Unique Value
+Property Damage Exponent Unique Value.
+
 ```{r}
 unique(storm_set$PROPDMGEXP)
 ```
 
-Crop Damage Exponent Unique Value
+Crop Damage Exponent Unique Value.
 ```{r}
 unique(storm_set$CROPDMGEXP)
 ```
 
-Property Damage Data:
+##### Property Damage Data:
+Assign the values for the property damage exponent.
+
 ```{r}  
 storm_set$PROPDMGEXP <- as.character(storm_set$PROPDMGEXP)
 storm_set$PROPDMGEXP[storm_set$PROPDMGEXP == "K"] <- 1000
@@ -101,6 +104,9 @@ storm_set$PROPDMGEXP <- as.integer(storm_set$PROPDMGEXP)
 storm_set$PROPDMGVALUE <- storm_set$PROPDMG * storm_set$PROPDMGEXP
 ```
 
+##### Crop Damage Data:
+Assign the values for the property damage exponent.
+
 ```{r}
 storm_set$CROPDMGEXP <- as.character(storm_set$CROPDMGEXP)
 storm_set$CROPDMGEXP[storm_set$CROPDMGEXP == "M"] <- 1000000
@@ -116,40 +122,61 @@ storm_set$CROPDMGEXP <- as.integer(storm_set$CROPDMGEXP)
 storm_set$CROPDMGVALUE <- storm_set$CROPDMG * storm_set$CROPDMGEXP
 ```
 
-### Results
+#### 4. Results
 
 #### Top 10 Death:
-```{r}
-fatality <- aggregate(FATALITIES ~ EVTYPE, storm_set, FUN = sum)
-```
-
 Here are the top 10 death.
 
 ```{r}
+fatality <- aggregate(FATALITIES ~ EVTYPE, storm_set, FUN = sum)
 TOP10DEAD <- fatality[order(-fatality$FATALITIES), ][1:10,]
 TOP10DEAD
 ```
 
 #### Top 10 Injuries:
-
-```{r}
-injury   <- aggregate(INJURIES ~ EVTYPE, storm_set, FUN = sum)
-```
-
 Here are the top 10 injuries.
 
 ```{r}
+injury   <- aggregate(INJURIES ~ EVTYPE, storm_set, FUN = sum)
 TOP10INJ <-injury[order(-injury$INJURIES), ][1:10,]
 TOP10INJ
 ```
 
+#### Top 5 Death & Injuries:
 ```{r}
 TOP5DEAD <- fatality[order(-fatality$FATALITIES), ][1:5,]
 TOP5INJ <-injury[order(-injury$INJURIES), ][1:5,]
 ```
 
+Top 5 Death:
 ```{r}
-par(mfrow=c(2,2))
+TOP5DEAD
+```
+
+Top 5 Injuries:
+```{r}
+TOP5INJ
+```
+
+### 4. Economic Consequences
+
+To analyze the top contributing weather events by total cost of damage, we use both property and crop damage.
+
+```{r}
+PROP_DMG <- aggregate(PROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
+CROP_DMG   <- aggregate(CROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
+head(PROP_DMG)
+head(CROP_DMG)
+
+TOP10PROPDMG <- PROP_DMG[order(-PROP_DMG$PROPDMGVALUE), ][1:10,]
+TOP10CROPDMG <- CROP_DMG[order(-CROP_DMG$CROPDMGVALUE), ][1:10,]
+```
+
+#### Bar Chart Showing 10 & 5 Top Events
+Tornados are the biggest causes of Fatalities and Injuries.  Flooding is the major cause of damages to property and drought is the highest cause of damages to crops.
+
+```{r}
+par(mfrow=c(3,2))
 barplot(TOP10DEAD$FATALITIES,names.arg=TOP10DEAD$EVTYPE,space=0.2,horiz=TRUE,col="cyan",
         xlab="Fatalities",xlim=c(0,6000),cex.axis=0.7,ylab="Event Type",ylim=c(0,10),cex.names=0.5,
         main="Top 10 Causes of Total Fatalities")
@@ -162,19 +189,11 @@ barplot(TOP5DEAD$FATALITIES, names.arg=TOP5DEAD$EVTYPE,space=0.2,horiz=TRUE,col=
 barplot(TOP5INJ$INJURIES, names.arg = TOP5INJ$EVTYPE,space=0.2,horiz=TRUE,col="blue",
         xlab="Injuries",xlim=c(0,90000),cex.axis=0.7,ylab="Event Type",ylim=c(0,5),cex.names=0.5,
         main="Top 5 Total Causes of Injuries")
+barplot(TOP10PROPDMG$PROPDMGVALUE, names.arg=TOP10PROPDMG$EVTYPE,space=0.2,horiz=FALSE,col="yellow",
+        xlab="Event Type",xlim=c(0,12),cex.axis=0.7,ylab="Fatalities",ylim=c(0,150000000000),cex.names=0.5,
+        main="Top 10 Property Damages")
+barplot(TOP10CROPDMG$CROPDMGVALUE, names.arg=TOP10CROPDMG$EVTYPE,space=0.2,horiz=FALSE,col="purple",
+        xlab="Event Type",xlim=c(0,12),cex.axis=0.7,ylab="Injuries",ylim=c(0,15000000000),cex.names=0.5,
+        main="Top 10 Crop Damages")
 ```        
         
-```{r}
-propertydmg <- aggregate(PROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
-cropdmg   <- aggregate(CROPDMGVALUE ~ EVTYPE, storm_set, FUN = sum)
-head(propertydmg)
-head(cropdmg)
-```
-
-### Economic Consequences
-
-To analyze the top contributing weather events by total cost of damage, both property and crop damage amounts are totaled for ranking.
-
-
-
-
